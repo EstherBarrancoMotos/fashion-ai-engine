@@ -1,0 +1,40 @@
+# Default configuration for the Fashion AI Engine
+# Override with environment-specific YAML files when needed.
+
+project:
+  name: fashion-ai-engine
+  random_seed: 42
+
+data:
+  train_end: "2020-06-22"
+  val_end: "2020-08-22"
+  test_end: "2020-09-22"
+
+demand_model:
+  type: lightgbm
+  params:
+    learning_rate: 0.05
+    num_leaves: 63
+    min_data_in_leaf: 100
+    n_estimators: 1000
+    early_stopping_rounds: 50
+
+return_model:
+  type: lightgbm
+  params:
+    learning_rate: 0.05
+    num_leaves: 31
+    n_estimators: 500
+    objective: binary
+    is_unbalance: true
+
+simulator:
+  scenarios:
+    - name: baseline
+      description: "Current production policy (real H&M observed quantities)"
+    - name: conservative
+      description: "Cut production only on top 10% riskiest products"
+      cut_top_percent: 0.10
+    - name: optimized
+      description: "Full ML-based policy: production = demand × (1 - α·return_prob)"
+      alpha: 0.5
