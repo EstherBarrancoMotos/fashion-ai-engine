@@ -1,0 +1,114 @@
+{
+  "scenarios": [
+    {
+      "scenario": "Baseline (current)",
+      "total_production": 505538.39999999997,
+      "total_sold_full": 421282.0,
+      "total_unsold": 84256.39999999997,
+      "total_revenue": 9836140.726241475,
+      "total_return_cost": 1720836.3219752414,
+      "total_margin": 2955347.095881301
+    },
+    {
+      "scenario": "Conservative (forecast-based)",
+      "total_production": 461123.1502041951,
+      "total_sold_full": 399434.08411191084,
+      "total_unsold": 61689.066092284265,
+      "total_revenue": 8967707.849537037,
+      "total_return_cost": 1627826.4120100988,
+      "total_margin": 2499625.7343396405
+    },
+    {
+      "scenario": "Optimized (forecast + return-aware)",
+      "total_production": 371941.43555245484,
+      "total_sold_full": 357248.19653131743,
+      "total_unsold": 14693.239021137422,
+      "total_revenue": 7510936.042939917,
+      "total_return_cost": 1448467.0283542913,
+      "total_margin": 1644442.034655253
+    }
+  ],
+  "impact": {
+    "margin_uplift_eur": -1310905.061226048,
+    "margin_uplift_pct": -44.357059211521445,
+    "production_reduction_pct": 26.42666995178707,
+    "unsold_reduction_pct": 82.56127840598765,
+    "return_cost_reduction_pct": 15.827728072842758
+  },
+  "sensitivity": [
+    {
+      "alpha": 0.0,
+      "margin_M": 2.2084364798989924,
+      "production_M": 0.41920286382199556,
+      "unsold_M": 0.03457152129106767
+    },
+    {
+      "alpha": 0.1,
+      "margin_M": 2.1131162737269857,
+      "production_M": 0.4097505781680874,
+      "unsold_M": 0.029714416339137614
+    },
+    {
+      "alpha": 0.2,
+      "margin_M": 2.0092573179121573,
+      "production_M": 0.40029829251417925,
+      "unsold_M": 0.025281562013403546
+    },
+    {
+      "alpha": 0.30000000000000004,
+      "margin_M": 1.89644548753284,
+      "production_M": 0.3908460068602711,
+      "unsold_M": 0.02128920994211678
+    },
+    {
+      "alpha": 0.4,
+      "margin_M": 1.7745487854214317,
+      "production_M": 0.381393721206363,
+      "unsold_M": 0.017763740448033426
+    },
+    {
+      "alpha": 0.5,
+      "margin_M": 1.6444420346552528,
+      "production_M": 0.37194143555245485,
+      "unsold_M": 0.014693239021137422
+    },
+    {
+      "alpha": 0.6000000000000001,
+      "margin_M": 1.506958444719137,
+      "production_M": 0.36248914989854675,
+      "unsold_M": 0.012021723442994904
+    },
+    {
+      "alpha": 0.7000000000000001,
+      "margin_M": 1.3612754221840155,
+      "production_M": 0.3530368642446386,
+      "unsold_M": 0.009812064529227275
+    },
+    {
+      "alpha": 0.8,
+      "margin_M": 1.2090008917099344,
+      "production_M": 0.34358457859073044,
+      "unsold_M": 0.008019203137828931
+    },
+    {
+      "alpha": 0.9,
+      "margin_M": 1.051304134952864,
+      "production_M": 0.33413229293682234,
+      "unsold_M": 0.006554402613245027
+    },
+    {
+      "alpha": 1.0,
+      "margin_M": 0.8897872596182944,
+      "production_M": 0.32468000728291424,
+      "unsold_M": 0.005354703367546567
+    }
+  ],
+  "best_alpha": 0.0,
+  "assumptions": {
+    "gross_margin_pct": 0.53,
+    "return_handling_cost_eur": 18.0,
+    "markdown_pct": 0.4,
+    "destruction_rate": 0.15,
+    "price_to_eur_factor": 800
+  }
+}
