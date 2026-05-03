@@ -34,7 +34,7 @@
       "total_margin": 2667789.9492803607
     },
     {
-      "scenario": "Optimized (smart, \u03b1=0.1)",
+      "scenario": "Optimized (smart, α=0.1)",
       "total_production": 505538.3999999999,
       "total_sold_full": 408134.5886038837,
       "total_unsold": 97403.8113961162,
@@ -45,13 +45,17 @@
       "total_margin": 2741110.8824288193
     }
   ],
-  "impact": {
-    "margin_uplift_eur": -287557.14660094026,
-    "margin_uplift_pct": -9.730063416296932,
-    "production_reduction_pct": 0.4935259939908439,
-    "unsold_reduction_pct": -12.288134467757908,
-    "return_cost_reduction_pct": 3.2133875372561937
+  "impact_vs_naive": {
+    "margin_uplift_eur": 175535.8965016026,
+    "margin_uplift_pct": 6.841970999267547,
+    "returns_saved_eur": -25206.08542026719,
+    "unsold_saved_units": 5612.730035408196,
+    "production_reduction_pct": -0.18711356189859973,
+    "unsold_reduction_pct": 5.448377471630616,
+    "return_cost_reduction_pct": -1.5365258658362357
   },
+  "alpha_optimal": 0.1,
+  "gap_to_oracle_eur": 214236.21345248166,
   "sensitivity": [
     {
       "alpha": 0.0,
