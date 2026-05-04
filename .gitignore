@@ -107,3 +107,13 @@ reports/results/*.parquet
 # Kaggle
 # =============================================================
 kaggle.json
+
+# Streamlit app data dependencies (small parquets needed by deployed app)
+!data/processed/simulator_pnl_summary.parquet
+!data/processed/simulator_sensitivity.parquet
+!data/processed/simulator_per_article.parquet
+!data/processed/simulator_top20_reassign.parquet
+!data/processed/article_clusters.parquet
+!data/processed/article_features.parquet
+!data/processed/demand_predictions.parquet
+!data/processed/return_predictions.parquet
