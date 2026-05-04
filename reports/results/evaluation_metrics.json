@@ -1,6 +1,23 @@
 {
-  "wape_model": 0.790476611741065,
-  "wape_baseline": 0.8827112335057556,
-  "n_test": 145886,
-  "improvement_pct": 10.44901415816062
+  "wape_model": 0.5149920381040608,
+  "wape_baseline_lag1": 0.5565090154962844,
+  "n_test": 47928,
+  "model": "LightGBM (log target, native categoricals)",
+  "feature_cols": [
+    "log_lag_1",
+    "log_lag_2",
+    "log_lag_4",
+    "log_rolling_mean_4",
+    "log_rolling_mean_8",
+    "month",
+    "week_of_year",
+    "avg_price",
+    "product_group_name",
+    "product_type_name",
+    "colour_group_name",
+    "department_name",
+    "index_group_name",
+    "garment_group_name"
+  ],
+  "improvement_pct": 7.460252437276247
 }

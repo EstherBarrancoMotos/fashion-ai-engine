@@ -3,7 +3,7 @@
 Reproduce la lógica del notebook 03b_Demand_Full_Dataset:
 - Filtro cold-start (>= 4 semanas de histórico en train)
 - Feature engineering temporal (lags + rolling means + calendario)
-- Join con article_features (categóricas)
+- Join con article_features SOLO si las categóricas no están ya en weekly_sales
 - Log-transform del target (units_sold) y de los lags
 - Split temporal estricto (train hasta 2020-06-22, test desde 2020-08-22)
 - LightGBM Regressor con categoricals nativos
@@ -17,9 +17,6 @@ import pickle
 import numpy as np
 import pandas as pd
 import lightgbm as lgb
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
-from sklearn.impute import SimpleImputer
 
 ROOT = Path(__file__).resolve().parents[1]
 PROCESSED = ROOT / "data" / "processed"
@@ -46,19 +43,31 @@ FEATURE_COLS = NUM_FEATURES + CATEGORY_COLS
 TARGET = "log_units"
 
 
+def ensure_categorical_features(weekly: pd.DataFrame, articles: pd.DataFrame) -> pd.DataFrame:
+    """Garantiza que weekly tenga las CATEGORY_COLS sin duplicarlas."""
+    missing = [c for c in CATEGORY_COLS if c not in weekly.columns]
+    if not missing:
+        print(f"  Categoricas ya presentes en weekly_sales (no se mergea)")
+        return weekly
+    print(f"  Categoricas a mergear desde articles: {missing}")
+    return weekly.merge(
+        articles[["article_id"] + missing],
+        on="article_id", how="left",
+    )
+
+
 def build_features(weekly: pd.DataFrame, articles: pd.DataFrame) -> pd.DataFrame:
     """Aplica filtro cold-start, feature engineering y join con metadata."""
     weekly = weekly.sort_values(["article_id", "week"]).reset_index(drop=True)
 
-    # Filtro: productos con histórico suficiente en train
     weeks_in_train = (
         weekly[weekly["week"] <= TRAIN_END]
         .groupby("article_id", observed=True).size()
     )
     valid_articles = weeks_in_train[weeks_in_train >= 4].index
+    print(f"  Productos validos (>=4 sem en train): {len(valid_articles):,}")
     weekly = weekly[weekly["article_id"].isin(valid_articles)].copy()
 
-    # Lags y rolling means
     g = weekly.groupby("article_id", observed=True)["units_sold"]
     for lag in [1, 2, 4]:
         weekly[f"lag_{lag}"] = g.shift(lag)
@@ -70,25 +79,20 @@ def build_features(weekly: pd.DataFrame, articles: pd.DataFrame) -> pd.DataFrame
              .reset_index(level=0, drop=True)
         )
 
-    # Calendario
     weekly["month"] = weekly["week"].dt.month
     weekly["week_of_year"] = weekly["week"].dt.isocalendar().week.astype(int)
 
-    # Join con article_features
-    weekly = weekly.merge(
-        articles[["article_id"] + CATEGORY_COLS],
-        on="article_id", how="left",
-    )
+    weekly = ensure_categorical_features(weekly, articles)
     for col in CATEGORY_COLS:
         weekly[col] = weekly[col].astype("category")
 
-    # Log-transform target y lags
     weekly["log_units"] = np.log1p(weekly["units_sold"])
     for col in ["lag_1", "lag_2", "lag_4", "rolling_mean_4", "rolling_mean_8"]:
         weekly[f"log_{col}"] = np.log1p(weekly[col])
 
-    # Eliminar filas sin lags completos
+    before = len(weekly)
     weekly = weekly.dropna(subset=["lag_4", "rolling_mean_8"]).copy()
+    print(f"  Filas tras dropna lags: {len(weekly):,} (eliminadas {before-len(weekly):,})")
     return weekly
 
 
@@ -109,18 +113,19 @@ def main():
     articles = pd.read_parquet(PROCESSED / "article_features.parquet")
     print(f"  weekly_sales : {weekly.shape}")
     print(f"  articles     : {articles.shape}")
+    print(f"  weekly cols  : {weekly.columns.tolist()}")
 
-    print("Feature engineering...")
+    print("\nFeature engineering...")
     df = build_features(weekly, articles)
     print(f"  dataset modelado: {df.shape}")
 
-    print("Split temporal...")
+    print("\nSplit temporal...")
     train, val, test = temporal_split(df)
     train.to_parquet(TRAIN_DIR / "train.parquet", index=False)
     test.to_parquet(TEST_DIR / "test.parquet", index=False)
     print(f"  train: {len(train):,}  val: {len(val):,}  test: {len(test):,}")
 
-    print("Entrenando LightGBM con categoricals nativos...")
+    print("\nEntrenando LightGBM con categoricals nativos...")
     X_train, y_train = train[FEATURE_COLS], train[TARGET]
     X_val, y_val = val[FEATURE_COLS], val[TARGET]
 
@@ -157,7 +162,7 @@ def main():
             "category_cols": CATEGORY_COLS,
             "best_iteration": model.best_iteration,
         }, f)
-    print(f"Modelo guardado: {out}")
+    print(f"\nModelo guardado: {out}")
     print(f"  best_iteration: {model.best_iteration}")
 
 
