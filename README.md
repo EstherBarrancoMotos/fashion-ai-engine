@@ -2,6 +2,8 @@
 
 > **A Machine Learning decision engine that helps fashion brands reduce overproduction and returns through demand forecasting, return prediction and economic simulation.**
 
+🚀 **[Live demo · Streamlit Cloud →](https://fashion-ai-engine-app.streamlit.app/)**
+
 [![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![scikit-learn](https://img.shields.io/badge/scikit--learn-1.3+-F7931E?logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
 [![LightGBM](https://img.shields.io/badge/LightGBM-4.0+-2C8EBB)](https://lightgbm.readthedocs.io/)
@@ -39,51 +41,32 @@ The aggregate cost is in the billions and the sustainability impact is significa
 4. **KMeans clustering** — segments 75K products into style archetypes for portfolio analysis
 5. **Streamlit decision app** — lets a non-technical user explore the data and run policy scenarios in real time
 
-The output is not just a model — it is a quantified business case.
-
 ### Key results
 
 | Metric | Value | Notes |
 |---|---|---|
 | Demand WAPE | **0.515** | LightGBM on 1.76M article × week rows. +7.5% over `lag_1` baseline |
-| Returns ROC-AUC | **0.64** | Semi-synthetic labels (industry rates) — see methodology |
+| Returns ROC-AUC | **0.64** | Semi-synthetic labels (industry rates) |
 | Margin uplift | **+175 K€** | Optimized policy vs. naive human baseline at constant production budget |
 | Returns avoided | **5.6 K units** | At the same total production volume |
 | Style clusters | **4** | Selected via silhouette analysis |
 | Models compared | **5 supervised + 1 unsupervised** | Pipeline + GridSearchCV with TimeSeriesSplit |
 
-**The engine doesn't produce less — it produces *better*.** The optimized policy reallocates the same production budget across articles using expected margin per unit, not raw demand volume.
+**The engine doesn't produce less — it produces *better*.**
 
-### Architecture
+### The Streamlit app
 
-```
-┌─────────────────────┐
-│   H&M dataset       │  31.8M transactions · 105K articles · 2018-2020
-│   (Kaggle)          │
-└──────────┬──────────┘
-           │
-   ┌───────┴────────┐
-   │ Feature Store  │  weekly_sales (article × week)
-   └───────┬────────┘
-           │
-   ┌───────┼─────────────────────────────┐
-   ▼       ▼              ▼              ▼
-┌──────┐ ┌──────┐  ┌──────────────┐ ┌──────────┐
-│Demand│ │Return│  │   KMeans     │ │   EDA    │
-│LGBM  │ │LGBM  │  │  k=4 styles  │ │  Style   │
-└───┬──┘ └───┬──┘  └──────┬───────┘ └─────┬────┘
-    │       │             │               │
-    └───────┴──────┬──────┴───────────────┘
-                   ▼
-         ┌──────────────────────┐
-         │ Economic Simulator   │   margin = f(demand, returns, costs)
-         │ + lost-demand penalty│
-         └────────┬─────────────┘
-                  ▼
-         ┌──────────────────┐
-         │  Streamlit App   │   5 pages · live policy simulation
-         └──────────────────┘
-```
+Five pages explore every angle of the system:
+
+| Page | What it shows |
+|---|---|
+| **Executive Dashboard** | Headline KPIs, 4-scenario comparison, alpha sensitivity |
+| **Decision Simulator** | Interactive sliders, live P&L recalculation |
+| **Style Intelligence** | Garment × colour heatmap, KMeans cluster profile, drilldown |
+| **Returns Risk** | Model metrics, calibration plot, top 50 risky products (CSV download) |
+| **Demand Explorer** | Forecast vs actual per product, error distribution, worst predictions |
+
+Try it live: **[fashion-ai-engine-app.streamlit.app](https://fashion-ai-engine-app.streamlit.app/)**
 
 ### Project structure
 
@@ -91,7 +74,7 @@ The output is not just a model — it is a quantified business case.
 fashion-ai-engine/
 ├── data/
 │   ├── raw/                     # H&M CSVs (gitignored)
-│   ├── processed/               # parquets + clusters (gitignored)
+│   ├── processed/               # parquets (small ones tracked for deploy)
 │   ├── train/                   # temporal split (gitignored)
 │   └── test/
 ├── notebooks/
@@ -102,65 +85,50 @@ fashion-ai-engine/
 │   ├── 03c_Returns_Model.ipynb           # return probability classifier
 │   └── 03d_Economic_Simulator.ipynb      # policy P&L simulation
 ├── src/
-│   ├── data_processing.py       # raw → processed pipeline
-│   ├── training.py              # full training pipeline (cold-start, lags, log target)
-│   ├── evaluation.py            # WAPE on test set
-│   ├── config.py                # economic assumptions
-│   └── simulator/               # economic model with lost-demand penalty
-├── models/
-│   ├── final_model.pkl                   # production model (LightGBM)
-│   ├── trained_model_1_dummy.pkl         # baseline
-│   ├── trained_model_2_ridge.pkl
-│   ├── trained_model_3_randomforest.pkl
-│   ├── trained_model_4_xgboost.pkl
-│   ├── trained_model_5_lightgbm.pkl
-│   └── kmeans_clusters.pkl
+│   ├── data_processing.py
+│   ├── training.py
+│   ├── evaluation.py
+│   ├── config.py
+│   └── simulator/
+├── models/                      # 7 .pkl files
 ├── app_streamlit/
 │   ├── streamlit_app.py
-│   ├── pages/
+│   ├── pages/                   # 4 pages
 │   ├── utils/
 │   └── requirements.txt
 ├── tests/
-│   └── test_simulator.py
 ├── reports/
-│   ├── figures/
-│   └── results/                 # JSON/CSV with metrics & comparisons
 ├── docs/
 │   ├── memoria.md
 │   ├── negocio.pptx
 │   └── ds.pptx
 ├── configs/default.yaml
 ├── requirements.txt
-├── .gitignore
 └── README.md
 ```
 
 ### Quickstart
 
 ```bash
-# 1. Clone
 git clone https://github.com/EstherBarrancoMotos/fashion-ai-engine.git
 cd fashion-ai-engine
 
-# 2. Virtual environment
 python -m venv .venv
 .venv\Scripts\activate          # Windows
-# source .venv/bin/activate     # macOS / Linux
 
-# 3. Install
 pip install -r requirements.txt
 
-# 4. Get the H&M dataset (Kaggle API + competition agreement required)
+# Download dataset (Kaggle API + competition agreement required)
 mkdir data\raw
 kaggle competitions download -c h-and-m-personalized-fashion-recommendations -p data/raw
 cd data\raw && Expand-Archive *.zip . && cd ..\..
 
-# 5. Run the pipeline
+# Run pipeline
 python -m src.data_processing
 python -m src.training
 python src\evaluation.py
 
-# 6. Launch the Streamlit app
+# Launch app locally
 streamlit run app_streamlit/streamlit_app.py
 ```
 
@@ -168,9 +136,9 @@ streamlit run app_streamlit/streamlit_app.py
 
 **Modelling**
 
-- **Demand**: LightGBM with log-transformed target, native categorical handling, strict temporal validation (train ≤ 2020-06-22, val ≤ 2020-08-22, test > 2020-08-22). Cold-start filter excludes products with <4 weeks of training history.
-- **Returns**: LightGBM classifier with class imbalance handling. Labels are semi-synthetic, derived from sectoral return rates (Narvar 2023, Optoro 2023).
-- **Comparative study (notebook 03)**: 5 supervised algorithms (Dummy, Ridge, RandomForest, XGBoost, LightGBM) on a 100K stratified sample, each wrapped in `sklearn.Pipeline` and tuned via `GridSearchCV` with `TimeSeriesSplit(3)`.
+- **Demand**: LightGBM with log-transformed target, native categorical handling, strict temporal validation (train ≤ 2020-06-22, val ≤ 2020-08-22, test > 2020-08-22). Cold-start filter.
+- **Returns**: LightGBM classifier with class imbalance handling. Labels semi-synthetic.
+- **Comparative study**: 5 supervised algorithms on a 100K stratified sample, each wrapped in `sklearn.Pipeline` and tuned via `GridSearchCV` with `TimeSeriesSplit(3)`.
 - **Clustering**: KMeans on one-hot encoded product attributes, k chosen via silhouette analysis.
 
 **Economic assumptions** (`src/config.py`)
@@ -184,21 +152,13 @@ streamlit run app_streamlit/streamlit_app.py
 
 **Honest limitations**
 
-- Returns labels are semi-synthetic. H&M does not publish return data; the model learns realistic patterns but is biased to the assumed sectoral rates.
-- The economic simulator is static — no inter-temporal inventory dynamics, no cross-product substitution, no price elasticity.
-- The demand cap (2.5× prediction) is a hyperparameter, not derived from data.
-- Comparative model study uses a 100K sample for tractable GridSearch; the production model is retrained on the full 2.1M dataset.
+- Returns labels are semi-synthetic. H&M does not publish return data.
+- The economic simulator is static (no inter-temporal dynamics, no substitution, no price elasticity).
+- The interactive simulator interpolates over the precomputed sensitivity curve rather than performing per-article live recomputation.
 
 ### Tech stack
 
-| Layer | Tools |
-|---|---|
-| Data | pandas, polars, pyarrow |
-| Modelling | scikit-learn, LightGBM, XGBoost |
-| Visualization | Plotly, matplotlib, seaborn |
-| App | Streamlit, Streamlit Community Cloud |
-| Experiment tracking | MLflow |
-| Testing | pytest |
+scikit-learn, LightGBM, XGBoost, pandas, Plotly, Streamlit, MLflow, pytest.
 
 ### Author
 
@@ -220,11 +180,9 @@ Educational use only. The H&M dataset is subject to its own competition terms (K
 La industria de la moda destruye o rebaja masivamente alrededor del **30% de su producción cada año**. Las causas son conocidas:
 
 - Forecasts de demanda imprecisos
-- Tasas de devolución online del 15–40% según categoría (Narvar, Optoro)
+- Tasas de devolución online del 15–40% según categoría
 - Decisiones de producción sin cuantificación del riesgo por producto
 - Falta de herramientas que traduzcan predicciones de ML en impacto en €
-
-El coste agregado se cuenta en miles de millones y el impacto medioambiental es significativo.
 
 ### La solución
 
@@ -232,57 +190,38 @@ El coste agregado se cuenta en miles de millones y el impacto medioambiental es 
 
 1. **Modelo de demanda** — predice unidades vendidas semanales por artículo
 2. **Modelo de devoluciones** — predice probabilidad de devolución por artículo
-3. **Simulador económico** — traduce ambas predicciones en € de margen esperado bajo distintas políticas
+3. **Simulador económico** — traduce ambas predicciones en € de margen bajo distintas políticas
 4. **Clustering KMeans** — segmenta los 75K productos en arquetipos de estilo
 5. **App Streamlit** — permite a un usuario no técnico explorar los datos y ejecutar escenarios en tiempo real
-
-El output no es solo un modelo: es un caso de negocio cuantificado.
 
 ### Resultados clave
 
 | Métrica | Valor | Nota |
 |---|---|---|
 | WAPE demanda | **0.515** | LightGBM sobre 1.76M filas. +7.5% sobre baseline `lag_1` |
-| ROC-AUC devoluciones | **0.64** | Labels semi-sintéticas (tasas sectoriales) |
-| Margen incremental | **+175 K€** | Política optimizada vs. baseline humano a presupuesto constante |
-| Devoluciones evitadas | **5.6 K unidades** | Al mismo volumen total de producción |
+| ROC-AUC devoluciones | **0.64** | Labels semi-sintéticas |
+| Margen incremental | **+175 K€** | Política optimizada vs. baseline humano |
+| Devoluciones evitadas | **5.6 K unidades** | Al mismo volumen de producción |
 | Clusters de estilo | **4** | Seleccionados por silhouette |
 | Modelos comparados | **5 supervisados + 1 no supervisado** | Pipeline + GridSearchCV |
 
-**El motor no produce menos: produce mejor.** La política optimizada reasigna el mismo presupuesto de producción entre artículos usando margen neto esperado por unidad, no volumen bruto de demanda.
+**El motor no produce menos: produce mejor.**
 
-### Estructura del proyecto
+### La app Streamlit
 
-Ver la sección [Project structure](#project-structure) más arriba — el árbol es idéntico.
+Pruébala en vivo: **[fashion-ai-engine-app.streamlit.app](https://fashion-ai-engine-app.streamlit.app/)**
 
-### Quickstart
+| Página | Qué muestra |
+|---|---|
+| Executive Dashboard | KPIs, comparativa de 4 escenarios, sensibilidad a α |
+| Decision Simulator | Sliders interactivos, recálculo del P&L en vivo |
+| Style Intelligence | Heatmap garment × color, perfil de clusters, drilldown |
+| Returns Risk | Métricas del modelo, calibración, top 50 productos riesgo |
+| Demand Explorer | Forecast vs real por producto, distribución del error |
 
-Ver la sección [Quickstart](#quickstart) más arriba — los comandos son idénticos.
+### Documentación
 
-### Metodología y limitaciones honestas
-
-**Modelado**
-
-- **Demanda**: LightGBM con target log-transformado, manejo nativo de categóricas, validación temporal estricta (train ≤ 2020-06-22, val ≤ 2020-08-22, test > 2020-08-22). Filtro de cold-start excluye productos con <4 semanas de historial.
-- **Devoluciones**: LightGBM classifier con manejo de desbalance. Labels semi-sintéticas derivadas de tasas sectoriales (Narvar 2023, Optoro 2023).
-- **Estudio comparativo (notebook 03)**: 5 algoritmos supervisados (Dummy, Ridge, RandomForest, XGBoost, LightGBM) sobre sample estratificado de 100K, cada uno envuelto en `sklearn.Pipeline` y tuneado con `GridSearchCV` y `TimeSeriesSplit(3)`.
-- **Clustering**: KMeans sobre atributos categóricos one-hot, k elegido por análisis de silhouette.
-
-**Supuestos económicos** (`src/config.py`)
-
-| Parámetro | Valor | Fuente |
-|---|---|---|
-| Margen bruto | 53% | H&M Annual Report 2023 |
-| Coste devolución | 18 €/ud | Optoro 2023 |
-| Markdown medio | 40% | McKinsey State of Fashion 2024 |
-| Tasa destrucción | 15% | Consenso de industria |
-
-**Limitaciones honestas**
-
-- Las labels de devolución son semi-sintéticas. H&M no publica datos de devolución; el modelo aprende patrones realistas pero está sesgado por las tasas sectoriales asumidas.
-- El simulador económico es estático: no modela dinámicas de inventario inter-temporales, sustitución entre productos, ni elasticidad de precio.
-- El cap de demanda (2.5× predicción) es un hiperparámetro, no derivado de datos.
-- El estudio comparativo usa sample de 100K para que el GridSearch sea tratable; el modelo de producción se reentrena sobre el dataset completo de 2.1M.
+Ver `docs/memoria.md` para la memoria completa del proyecto y `docs/negocio.pptx` + `docs/ds.pptx` para las presentaciones.
 
 ### Autor
 
