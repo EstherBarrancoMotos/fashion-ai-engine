@@ -227,7 +227,7 @@ Ver `docs/memoria.md` para la memoria completa del proyecto y `docs/negocio.pptx
 
 Proyecto desarrollado por **Esther Barranco Motos** como entrega final del módulo de Machine Learning del bootcamp de Data Science.
 
-LinkedIn: *(próximamente)*
+LinkedIn: www.linkedin.com/in/esther-barranco-motos
 
 ### Licencia
 
