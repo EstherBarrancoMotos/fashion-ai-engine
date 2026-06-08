@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: fashion-ai-engine
+    env: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: MODEL_PATH
+        value: models/fashion_classifier.joblib

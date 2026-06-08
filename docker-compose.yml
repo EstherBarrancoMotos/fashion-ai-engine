@@ -1,0 +1,25 @@
+services:
+  api:
+    build: .
+    image: fashion-ai-engine
+    ports:
+      - "8000:8000"
+    environment:
+      MODEL_PATH: models/fashion_classifier.joblib
+    volumes:
+      - ./models:/app/models
+
+  train:
+    build: .
+    image: fashion-ai-engine
+    command:
+      - python
+      - -m
+      - fashion_ai_engine.training
+      - --data-dir
+      - data/raw
+      - --model-path
+      - models/fashion_classifier.joblib
+    volumes:
+      - ./data:/app/data
+      - ./models:/app/models

@@ -1,0 +1,5 @@
+image_size: 224
+histogram_bins: 24
+test_size: 0.2
+random_state: 42
+model_path: models/fashion_classifier.joblib
